@@ -148,10 +148,10 @@ const test = async (req, res) => {
     //     voucher: [],
     //     avatar: 'https://img.freepik.com/premium-vector/male-avatar-icon-unknown-anonymous-person-default-avatar-profile-icon-social-media-user-business-man-man-profile-silhouette-isolated-white-background-vector-illustration_735449-122.jpg'
     // })
-    const passwordHash = await bcrypt.hash('tuandzk152', 11);
-    // passwordHash.match("$2b$11$rRZc1jJelQhpirTsShcJa.5IL0M8FJdvkREa4u7FyGfFSk05.qP1a")
-    const check = await bcrypt.compare('tuandzk152', "$2b$11$rRZc1jJelQhpirTsShcJa.5IL0M8FJdvkREa4u7FyGfFSk05.qP1a")
-    res.json(check)
+    
+    res.json({
+        msg: 'CHECK'
+    })
 }
 
 const changePassword = async (req, res) => {
