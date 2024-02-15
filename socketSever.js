@@ -56,6 +56,10 @@ const SocketServer = (socket, io) => {
         const notify = await readAllNotify(e)
     })
 
+    // socket.on('TEST', ()=>{
+    //     socket.emit('test2')
+    // })
+
 
     socket.on('CEOPlaced', async (order) => {
         try {
