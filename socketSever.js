@@ -1,6 +1,7 @@
-const { checkAdmin2, checkId } = require('./controllers/authCtrl');
+const { checkAdmin2 } = require('./controllers/authCtrl');
 const { createNotify, readAllNotify } = require('./controllers/notifyCtrl');
 const { handleOrder, placedOrder } = require('./controllers/orderCtrl');
+const jwt = require("jsonwebtoken");
 // const io = 
 const user = require('./models/userModel')
 
@@ -22,8 +23,8 @@ const SocketServer = (socket, io) => {
                 // console.log('admTren',socket.id)
                 adminSocket.push(socket);
             }else{
-                const user = await checkId(token);
-                socket.userId = user._id;
+                const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+                socket.userId = decoded._id;
                 userSocketMap[user._id] =  socket.id;
             }
         }

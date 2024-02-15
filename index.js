@@ -9,14 +9,14 @@ const cors = require('cors')
 const app = express();
 
 const http = require('http');
-const server = http.createServer(app);
+const index = http.createServer(app);
 const { Server } = require("socket.io");
 const { SocketServer } = require('./socketSever');
-const io = new Server(server, {
+const io = new Server(index, {
     cors: {
       origin: "*"
     },
-        allowEIO3: true})  
+        allowEIO3: true});
 app.use(cors());
 // app.use(cors({
 //     origin: "*",
@@ -56,7 +56,7 @@ app.use('/api', require('./routers/notifyRouter'))
 app.use('/api', require('./routers/voucherRouter'))
 app.use('/api', require('./routers/orderRouter'))
 
-server.listen(port, ()=>{
+index.listen(port, ()=>{
     console.log(`Listening on ${port}`)
 })
 

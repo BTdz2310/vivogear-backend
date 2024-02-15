@@ -2,14 +2,14 @@ const User = require('../models/userModel');
 const bcrypt = require('bcrypt');
 const jwt = require("jsonwebtoken");
 
-const checkId = async (token) => {
-    if(!token) return null;
+// const checkId = async (token) => {
+//     if(!token) return null;
 
-    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-    const user = await User.findOne({ _id: decoded.id });
+//     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+//     const user = await User.findById(decoded.id)
   
-    return user;
-}
+//     return user;
+// }
 
 const register = async (req, res, next) => {
     const {username, password} = req.body;
@@ -103,7 +103,8 @@ const checkAdmin = async (req, res, next) => {
 }
 
 const checkAdmin2 = async (token) => {
-    const user = await checkId(token);
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    const user = await User.findById(decoded.id);
     if(!user) return false;
     return user.role==='admin';
 }
@@ -144,14 +145,14 @@ const addVoucherUser = async (req, res, next) => {
 }
 
 const test = async (req, res) => {
-    // const user = await User.updateMany({},{
-    //     voucher: [],
-    //     avatar: 'https://img.freepik.com/premium-vector/male-avatar-icon-unknown-anonymous-person-default-avatar-profile-icon-social-media-user-business-man-man-profile-silhouette-isolated-white-background-vector-illustration_735449-122.jpg'
-    // })
+    const user = await User.find({});
     
-    res.json({
-        msg: 'CHECK'
+    console.log(user)
+
+    return res.json({
+        msg: user
     })
+
 }
 
 const changePassword = async (req, res) => {
@@ -213,5 +214,4 @@ module.exports = {
     useVoucher,
     checkAdmin,
     checkAdmin2,
-    checkId
 }
