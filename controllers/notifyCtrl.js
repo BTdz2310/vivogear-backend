@@ -28,6 +28,11 @@ const getAllNotify = async (req, res, next) => {
     }
 }
 
+const newNotify = async (notify) => {
+    const not1 = await notifyModel.create(notify);
+    return not1;
+}
+
 const readAllNotify = async (id) => {
     try{
         const notify = notifyModel.updateMany({
@@ -45,6 +50,7 @@ const readAllNotify = async (id) => {
 module.exports = {
     createNotify,
     getAllNotify,
-    readAllNotify
+    readAllNotify,
+    newNotify
 }
 

@@ -86,13 +86,43 @@ const getAllInventory = async (req, res, next) => {
     }
 }
 
+const updateQuantity = async (products) => {
+  // const inventory = await inventoryModel.findById(invId);
+  // inventory.quantity -= invQua;
+  // await inventory.save();
+  const arr = [];
+  await Promise.all(products.map(async (inv)=>{
+    const inventory = await inventoryModel.findById(inv.inventoryId);
+    inventory.quantity -= inv.quantity;
+    await inventory.save();
+    arr.push({
+      inventoryId: inv.inventoryId,
+      productId: inv.productId,
+      quantity: inventory.quantity
+    })
+  }))
+  return arr;
+}
+
+const updateQuantityPlus = async (products) => {
+  // const inventory = await inventoryModel.findById(invId);
+  // inventory.quantity -= invQua;
+  // await inventory.save();
+  const arr = [];
+  await Promise.all(products.map(async (inv)=>{
+    const inventory = await inventoryModel.findById(inv.inventoryId);
+    inventory.quantity += inv.quantity;
+    await inventory.save();
+    arr.push({
+      inventoryId: inv.inventoryId,
+      productId: inv.productId,
+      quantity: inventory.quantity
+    })
+  }))
+  return arr;
+}
+
 const changeInventory = async (req, res, next) => {
-  // console.log(req.params.id);
-  console.log(req.body)
-  // return res.status(200).json({
-  //       msg: `Thêm Inventory ${req.params.id} thành công`,
-  //       data: req.body
-  //     })
   try{
     await inventoryModel.findByIdAndUpdate(req.params.id, {
       quantity: req.body.inv.quantity,
@@ -113,5 +143,7 @@ const changeInventory = async (req, res, next) => {
 module.exports = {
     createInventory,
     getAllInventory,
-    changeInventory
+    changeInventory,
+    updateQuantity,
+    updateQuantityPlus
 }

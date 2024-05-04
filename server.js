@@ -55,6 +55,7 @@ app.use('/api', require('./routers/userCartRouter'))
 app.use('/api', require('./routers/notifyRouter'))
 app.use('/api', require('./routers/voucherRouter'))
 app.use('/api', require('./routers/orderRouter'))
+app.use('/api', require('./routers/reviewRouter'))
 
 server.listen(port, ()=>{
     console.log(`Listening on ${port}`)

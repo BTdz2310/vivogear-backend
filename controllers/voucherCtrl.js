@@ -16,61 +16,25 @@ const getAllVoucher = async (req, res, next) => {
 
 
 
-const createVoucher = async (req, res, next) => {
-    const {type, code, discount, maxD, minO, expired, canSave} = req.body;
+const createVoucher = async (voucher) => {
     // console.log(req.body)
     // return;
-    try{
-        const voucher = await voucherModel.findOne({
-            code: code
-        })
-        console.log(voucher)
-        if(voucher) return res.status(400).json({
-            msg: 'Existing Code'
-        })
-        const voucher1 = await voucherModel.create(req.body)
-        console.log(voucher1)
-        res.status(200).json({
-            data: voucher1
-        })
-    }catch{
-        res.status(500).json({
-            msg: 'Error'
-        })
-    }
+    const voucher1 = await voucherModel.create(voucher)
+    return voucher1;
 }
 
-const updateVoucher = async (req, res, next) => {
-    const idVoucher = req.params.idVoucher;
-    try{
-        await voucherModel.findByIdAndUpdate(idVoucher, req.body)
-        const updatedVoucher = await voucherModel.findById(idVoucher);
-        return res.status(200).json({
-            msg: 'Success',
-            data: updatedVoucher
-        })
-    }catch{
-        return res.status(500).json({
-            msg: 'Error'
-        })
-    }
-    // console.log(idVoucher, req.body)
+const updateVoucher = async (voucher) => {
+    await voucherModel.findOneAndUpdate({
+        code: voucher.code
+    }, voucher);
+    const voucher1 = voucherModel.findById(voucher._id);
+    return voucher1;
 }
 
-const deleteVoucher = async (req, res, next) => {
-    const idVoucher = req.params.idVoucher;
-    try{
-        const deletedVoucher = await voucherModel.findByIdAndDelete(idVoucher)
-        return res.status(200).json({
-            msg: 'Success',
-            data: deletedVoucher.code
-        })
-    }catch{
-        return res.status(500).json({
-            msg: 'Error'
-        })
-    }
-    // console.log(idVoucher, req.body)
+const deleteVoucher = async (voucher) => {
+    await voucherModel.deleteOne({
+        code: voucher.code
+    })
 }
 
 

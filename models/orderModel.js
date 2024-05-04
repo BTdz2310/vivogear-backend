@@ -43,13 +43,22 @@ const orderSchema = new mongoose.Schema(
     success: {
         type: Number
     },
+    returned: {
+        type: Number
+    },
     canceled: {
         type: Number
+    },
+    message: {
+        type: String
     },
     total: {
         type: Number
     },
-    voucher: Array,
+    voucher: {
+        type: [String],
+        required: true
+    },
     phone: {
         type: String,
         required: true

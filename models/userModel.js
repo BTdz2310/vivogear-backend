@@ -14,7 +14,6 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true,
     },
     phone: {
         type: String,
@@ -51,6 +50,12 @@ const userSchema = new mongoose.Schema({
             used: Boolean
         }],
         default: []
+    },
+    social: {
+        type: String
+    },
+    socialId: {
+        type: String
     }
 },
     {

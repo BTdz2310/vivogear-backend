@@ -29,6 +29,9 @@ const voucherSchema = new mongoose.Schema({
     },
     products: {
         type: Array
+    },
+    inform: {
+        type: Boolean
     }
 },{
     collection: 'Voucher'

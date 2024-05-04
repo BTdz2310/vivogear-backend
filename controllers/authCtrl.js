@@ -2,14 +2,10 @@ const User = require('../models/userModel');
 const bcrypt = require('bcrypt');
 const jwt = require("jsonwebtoken");
 
-// const checkId = async (token) => {
-//     if(!token) return null;
-
-//     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-//     const user = await User.findById(decoded.id)
-  
-//     return user;
-// }
+const checkId = async (id) => {
+    const user = await User.findById(id)
+    return user;
+}
 
 const register = async (req, res, next) => {
     const {username, password} = req.body;
@@ -129,6 +125,11 @@ const updateUser = async (req, res, next) => {
     }
 }
 
+const allUserId = async () => {
+    const users = await User.find({});
+    return users.map(user=>user._id);
+}
+
 const addVoucherUser = async (req, res, next) => {
     const user = await User.findById(res.locals.idUser.id);
 
@@ -176,25 +177,20 @@ const changePassword = async (req, res) => {
     });
 }
 
-const useVoucher = async (req, res, next) => {
-    const {order, product} = req.body;
-    try{
-        let user = await User.findById(res.locals.idUser.id);
-        console.log('>>>VOUCHER', user.voucher)
-        for(let i=0; i<user.voucher.length; i++){
-            if(user.voucher[i].code===order) user.voucher[i].used = true;
-            if(user.voucher[i].code===product) user.voucher[i].used = true;
-        }
-        await user.save();
-
-        return res.status(200).json({
-            data: user
-        })
-    }catch(e){
-        return res.status(500).json({
-            msg: `Lỗi Server: ${e}`
-        })
+const useVoucher = async (id, voucher) => {
+    let user = await User.findById(id);
+    for(let i=0; i<user.voucher.length; i++){
+        if(user.voucher[i].code===voucher) user.voucher[i].used = true;
     }
+    await user.save();
+}
+
+const rtnVoucher = async (id, voucher) => {
+    let user = await User.findById(id);
+    for(let i=0; i<user.voucher.length; i++){
+        if(user.voucher[i].code===voucher) user.voucher[i].used = false;
+    }
+    await user.save();
 }
 
 const createAccessToken = (payload) => {
@@ -202,6 +198,147 @@ const createAccessToken = (payload) => {
       expiresIn: "1d",
     });
   };
+
+
+
+
+
+
+
+
+
+  const getAccessTokenGithub = async (code) => {
+    try {
+      const params = `?client_id=39ffe20d53ddbf0bf30f&client_secret=31c415a0b6713cf12d2f4ea99ffeca9797a961fa&code=${code}`;
+  
+      const response = await fetch(
+        `https://github.com/login/oauth/access_token${params}`,
+        {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+            },
+        },
+      );
+        const json = await response.json();
+    //   console.log('tokengit',json)
+      return json;
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  };
+
+  const getUserDataGithub = async (accessToken) => {
+    try {
+        console.log(accessToken)
+      const response = await fetch('https://api.github.com/user', {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      const data = await response.json();
+      const user = await loginUserGithub(data);
+        const access_token = createAccessToken({ id: user._id });
+        return{
+            status: 200,
+            msg: "Đăng nhập thành công!",
+            access_token,
+            user: user,
+            id: user._id,
+            isAdmin: user.role==='admin'
+        }
+    } catch (error) {
+      return {
+        status: 400,
+        msg: error
+      }
+    }
+  };
+
+
+  const getUserDataGoogle = async (accessToken) => {
+    try {
+      const response = await fetch(
+        `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${accessToken}`,
+      );
+    const data = await response.json();
+    console.log(data);
+    const user = await loginUserGoogle(data);
+    const access_token = createAccessToken({ id: user._id });
+    return{
+        status: 200,
+        msg: "Đăng nhập thành công!",
+        access_token,
+        user: user,
+        id: user._id,
+        isAdmin: user.role==='admin'
+    }
+    } catch (error) {
+      return {
+        status: 400,
+        msg: error
+      }
+    }
+  };
+
+  const loginUserGoogle = async (data) => {
+    try{
+        let user = await User.findOne({
+            social: 'google',
+            socialId: data.sub
+        });
+        if(!user){
+            await User.create({
+                username: data.email,
+                email: data.email,
+                fullname: data.name,
+                avatar: data.picture,
+                social: 'google',
+                socialId: data.sub,
+                role: 'user'
+            })
+            user = await User.findOne({
+                social: 'google',
+                socialId: data.sub
+            })
+        }
+        return user;
+    }catch(e){
+        throw new Error(e.message);
+    }
+  }
+
+  const loginUserGithub = async (data) => {
+    try{
+        let user = await User.findOne({
+            social: 'github',
+            socialId: data.id
+        });
+        if(!user){
+            await User.create({
+                username: data.login,
+                fullname: data.name,
+                avatar: data.avatar_url,
+                social: 'github',
+                socialId: data.id,
+                role: 'user'
+            })
+            user = await User.findOne({
+                social: 'github',
+                socialId: data.id
+            })
+        }
+        return user;
+    }catch(e){
+        throw new Error(e.message);
+    }
+  }
+
+
+
+
 
 module.exports = {
     register,
@@ -214,4 +351,8 @@ module.exports = {
     useVoucher,
     checkAdmin,
     checkAdmin2,
+    checkId,
+    allUserId,
+    rtnVoucher,
+    getAccessTokenGithub, getUserDataGithub, getUserDataGoogle
 }

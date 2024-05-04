@@ -1,4 +1,5 @@
 const orderModel = require('../models/orderModel');
+const inventoryModel = require('../models/inventoryModel')
 
 const createOrder = async (req, res, next) => {
     // console.log()
@@ -15,6 +16,8 @@ const createOrder = async (req, res, next) => {
             received: null,
             success: null,
             canceled: null,
+            returned: null,
+            message: null,
             total,
             voucher,
             phone, 
@@ -35,31 +38,10 @@ const createOrder = async (req, res, next) => {
 }
 
 const placedOrder = async (order) => {
-    const {user, products, status, placed, confirmed, pickup, received, success, canceled, total, voucher, phone, address} = order;
-
-    try{
         
-        const orderNew = await orderModel.create({
-            user,
-            products,
-            status,
-            placed: placed,
-            confirmed: confirmed,
-            pickup: pickup,
-            received: received,
-            success,
-            canceled: canceled,
-            total,
-            voucher,
-            phone, 
-            address
-        })
+        const orderNew = await orderModel.create(order)
 
         return orderNew;
-
-    }catch(e){
-        throw e;
-    }
 }
 
 const handleOrder = async (order) => {
