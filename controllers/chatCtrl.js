@@ -78,7 +78,7 @@ const getAllMsg = async (req, res, next) => {
         })
 
     }catch(e){
-        // console.log(e)
+        console.log(e)
         return res.status(500).json({
             msg: e
         })
