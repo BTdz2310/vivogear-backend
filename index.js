@@ -15,6 +15,7 @@ const io = new Server(index, {
     cors: {
       origin: "*"
     },
+    // transports: ['websocket'],
         allowEIO3: true});
 app.use(cors());
 // app.use(cors({
@@ -54,6 +55,7 @@ app.use('/api', require('./routers/userCartRouter'))
 app.use('/api', require('./routers/notifyRouter'))
 app.use('/api', require('./routers/voucherRouter'))
 app.use('/api', require('./routers/orderRouter'))
+app.use('/api', require('./routers/chatRouter'))
 
 index.listen(port, ()=>{
     console.log(`Listening on ${port}`)

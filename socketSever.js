@@ -6,6 +6,7 @@ const user = require('./models/userModel');
 const { createReview,  } = require('./controllers/reviewCtrl');
 const { updateQuantity, updateQuantityPlus } = require('./controllers/inventoryCtrl');
 const { createVoucher, updateVoucher, deleteVoucher } = require('./controllers/voucherCtrl');
+const { sendMessage } = require('./controllers/chatCtrl');
 
 const adminSocket = [];
 const userSocketMap = {};
@@ -15,7 +16,6 @@ const SocketServer = (socket, io) => {
     // adminSocket.forEach((admin) => {
     //     console.log('adm',admin.id);
     //   });
-    // console.log('user', userSocketMap)
 
     socket.on('credential', async (token) => {
         // console.log('TOKEN', token);
@@ -29,12 +29,32 @@ const SocketServer = (socket, io) => {
                 const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
                 // console.log('code',decoded)
                 socket.userId = decoded.id;
-                userSocketMap[decoded.id] =  socket.id;
+                userSocketMap[decoded.id] = socket.id;
             }
         }
 
+
         // console.log(userSocketMap)
       });
+
+    socket.on('sendMsg', async(e)=>{
+        
+        try{
+
+            console.log(e)
+            const chat = await sendMessage(e);
+            io.emit('receiveMsg', chat);
+            adminSocket.forEach((admin) => {
+                admin.emit('receiveMsg', chat);
+            });
+
+        }catch(e){
+            socket.emit('SEError', e);
+        }
+
+    })
+    
+    console.log('user', userSocketMap)
 
     socket.on('CENRegister', async (e)=>{
         const {username, idUser, createTime} =  e;
@@ -55,7 +75,8 @@ const SocketServer = (socket, io) => {
     })
 
     socket.on('CENReadAll', async (e)=>{
-        socket.emit('test')
+        // socket.emit('test')
+        io.to(userSocketMap['65ccdb553a423981ae38c3d3']).emit('test')
         // console.log('read',e)
         const notify = await readAllNotify(e)
     })
