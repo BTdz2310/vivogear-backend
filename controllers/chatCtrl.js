@@ -70,7 +70,7 @@ const getAllMsg = async (req, res, next) => {
             created_at: 'ascending'
         });
 
-        // console.log(chats)
+        console.log(chats)
 
         return res.status(200).json({
             data: chats,
