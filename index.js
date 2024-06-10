@@ -2,15 +2,37 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv').config();
 const bodyParser = require('body-parser')
-const cors = require('cors')
+const cors = require('cors');
+const redis = require('redis');
+const { Server } = require("socket.io");
+const { SocketServer } = require('./socketSever');
+const { initializeRedisClient } = require('./middlewares/redis');
 
+
+// const client = redis.createClient({url: 'redis://default:4J8rl31EB0yllLmvtGYagTvmzfTpOFcV@redis-19886.c1.ap-southeast-1-1.ec2.redns.redis-cloud.com:19886'});
+
+// const connectRedis = async () => {
+//     try {
+//       await client.connect();
+//       console.log('Connect Redis Successful');
+//     } catch (error) {
+//       console.error('Failed to connect to Redis with error:');
+//       console.error(error);
+//     }
+//   };
+  
+//   connectRedis();
+
+//   console.log(client.isOpen)
+
+const initializeExpressServer = async () => {
 
 const app = express();
 
+await initializeRedisClient();
+
 const http = require('http');
 const index = http.createServer(app);
-const { Server } = require("socket.io");
-const { SocketServer } = require('./socketSever');
 const io = new Server(index, {
     cors: {
       origin: "*"
@@ -60,4 +82,6 @@ app.use('/api', require('./routers/chatRouter'))
 index.listen(port, ()=>{
     console.log(`Listening on ${port}`)
 })
+}
 
+initializeExpressServer()

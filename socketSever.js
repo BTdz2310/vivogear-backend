@@ -7,6 +7,7 @@ const { createReview,  } = require('./controllers/reviewCtrl');
 const { updateQuantity, updateQuantityPlus } = require('./controllers/inventoryCtrl');
 const { createVoucher, updateVoucher, deleteVoucher } = require('./controllers/voucherCtrl');
 const { sendMessage } = require('./controllers/chatCtrl');
+const { writeData, readData } = require('./middlewares/redis');
 
 const adminSocket = [];
 const userSocketMap = {};
@@ -18,23 +19,19 @@ const SocketServer = (socket, io) => {
     //   });
 
     socket.on('credential', async (token) => {
-        // console.log('TOKEN', token);
-        const isAdmin = await checkAdmin2(token);
-        // console.log(isAdmin)
         if(token){
+            const isAdmin = await checkAdmin2(token);
+            const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
             if (isAdmin) {
-                // console.log('admTren',socket.id)
-                adminSocket.push(socket);
+                await writeData('admin', socket.id, {
+                    EX: 21600
+                })
             }else{
-                const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-                // console.log('code',decoded)
-                socket.userId = decoded.id;
-                userSocketMap[decoded.id] = socket.id;
+                await writeData(decoded.id, socket.id, {
+                    EX: 21600
+                })
             }
         }
-
-
-        // console.log(userSocketMap)
       });
 
     socket.on('sendMsg', async(e)=>{
@@ -44,23 +41,18 @@ const SocketServer = (socket, io) => {
             console.log(e)
             const chat = await sendMessage(e);
             io.emit('receiveMsg', chat);
-            adminSocket.forEach((admin) => {
-                admin.emit('receiveMsg', chat);
-            });
+            const adminID = await readData('admin');
+            if(adminID) io.to(adminID).emit('receiveMsg', chat);
 
         }catch(e){
             socket.emit('SEError', e);
         }
 
     })
-    
-    console.log('user', userSocketMap)
 
     socket.on('CENRegister', async (e)=>{
-        const {username, idUser, createTime} =  e;
 
-        // const decoded = jwt.verify(e, process.env.ACCESS_TOKEN_SECRET);
-        // const user = await user.findOne({ _id: decoded.id });
+        const {username, idUser, createTime} =  e;
 
         const notify = await createNotify({
             user: idUser,
@@ -70,7 +62,6 @@ const SocketServer = (socket, io) => {
             image: 'user',
             createTime,
         })
-
 
     })
 
@@ -97,10 +88,8 @@ const SocketServer = (socket, io) => {
             await Promise.all(orderRtn.voucher.map(async (vch)=>{
                 await useVoucher(orderRtn.user, vch)
             }))
-            adminSocket.forEach((admin) => {
-                // console.log(admin)
-                admin.emit('SEOSuccess', orderRtn);
-              });
+            const admin = await readData('admin');
+            if(admin) io.to(admin).emit('SEOSuccess', orderRtn);
         } catch(e) {
             socket.emit('SEError', e);
         }
@@ -113,10 +102,8 @@ const SocketServer = (socket, io) => {
             // console.log('adm',adminSocket.map(adm=>adm.id))
             
             socket.emit('SEOSuccess', orderRtn);
-            adminSocket.forEach((admin) => {
-                // console.log('admDuoi',admin.id)
-                admin.emit('SEOSuccess', orderRtn);
-            });
+            const admin = await readData('admin');
+            if(admin) io.to(admin).emit('SEOSuccess', orderRtn);
             
             const userSocketId = userSocketMap[orderRtn.user];
 
