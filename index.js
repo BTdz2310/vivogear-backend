@@ -39,7 +39,10 @@ const io = new Server(index, {
     },
     // transports: ['websocket'],
         allowEIO3: true});
-app.use(cors());
+app.use(cors({
+    origin: 'https://vivogear.netlify.app',
+    optionsSuccessStatus: 200
+}));
 // app.use(cors({
 //     origin: "*",
 //   }));
